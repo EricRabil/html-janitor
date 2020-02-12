@@ -27,6 +27,7 @@
 
     config.blockElements = config.blockElements || [];
     config.inlineElements = config.inlineElements || [];
+    config.specialElements = config.specialElements || [];
 
     this.blockElementNames = ['P', 'LI', 'TD', 'TH', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'PRE', ...config.blockElements];
     this.inlineElementNames = ['A', 'B', 'STRONG', 'I', 'EM', 'SUB', 'SUP', 'U', 'STRIKE', ...config.inlineElements];
@@ -50,6 +51,12 @@
     root.innerHTML = html;
 
     this._sanitize(sandbox, root);
+
+    const children = Array.from(root.children);
+
+    if (children.length === 1 && this.config.specialElements.includes(children[0].tagName)) {
+      return children[0].outerHTML;
+    }
 
     return root.innerHTML;
   };

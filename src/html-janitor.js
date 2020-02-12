@@ -25,18 +25,23 @@
       throw new Error("The configuration was invalid");
     }
 
+    config.blockElements = config.blockElements || [];
+    config.inlineElements = config.inlineElements || [];
+
+    this.blockElementNames = ['P', 'LI', 'TD', 'TH', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'PRE', ...config.blockElements];
+    this.inlineElementNames = ['A', 'B', 'STRONG', 'I', 'EM', 'SUB', 'SUP', 'U', 'STRIKE', ...config.inlineElements];
+
     this.config = config;
   }
 
   // TODO: not exhaustive?
-  var blockElementNames = ['P', 'LI', 'TD', 'TH', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'PRE'];
-  function isBlockElement(node) {
-    return blockElementNames.indexOf(node.nodeName) !== -1;
+  
+  HTMLJanitor.prototype.isBlockElement = function(node) {
+    return this.blockElementNames.indexOf(node.nodeName) !== -1;
   }
 
-  var inlineElementNames = ['A', 'B', 'STRONG', 'I', 'EM', 'SUB', 'SUP', 'U', 'STRIKE'];
-  function isInlineElement(node) {
-    return inlineElementNames.indexOf(node.nodeName) !== -1;
+  HTMLJanitor.prototype.isInlineElement = function(node) {
+    return this.inlineElementNames.indexOf(node.nodeName) !== -1;
   }
 
   HTMLJanitor.prototype.clean = function (html) {
@@ -63,8 +68,8 @@
         // `contenteditable` in Firefox: http://jsbin.com/EyuKase/1/edit?js,output
         // FIXME: make this an option?
         if (node.data.trim() === ''
-            && ((node.previousElementSibling && isBlockElement(node.previousElementSibling))
-                 || (node.nextElementSibling && isBlockElement(node.nextElementSibling)))) {
+            && ((node.previousElementSibling && this.isBlockElement(node.previousElementSibling))
+                 || (node.nextElementSibling && this.isBlockElement(node.nextElementSibling)))) {
           parentNode.removeChild(node);
           this._sanitize(document, parentNode);
           break;
@@ -80,18 +85,18 @@
         break;
       }
 
-      var isInline = isInlineElement(node);
+      var isInline = this.isInlineElement(node);
       var containsBlockElement;
       if (isInline) {
-        containsBlockElement = Array.prototype.some.call(node.childNodes, isBlockElement);
+        containsBlockElement = Array.prototype.some.call(node.childNodes, this.isBlockElement);
       }
 
       // Block elements should not be nested (e.g. <li><p>...); if
       // they are, we want to unwrap the inner block element.
       var isNotTopContainer = !! parentNode.parentNode;
       var isNestedBlockElement =
-            isBlockElement(parentNode) &&
-            isBlockElement(node) &&
+            this.isBlockElement(parentNode) &&
+            this.isBlockElement(node) &&
             isNotTopContainer;
 
       var nodeName = node.nodeName.toLowerCase();

@@ -95,7 +95,7 @@
       var isInline = this.isInlineElement(node);
       var containsBlockElement;
       if (isInline) {
-        containsBlockElement = Array.prototype.some.call(node.childNodes, this.isBlockElement);
+        containsBlockElement = Array.prototype.some.call(node.childNodes, this.isBlockElement.bind(this));
       }
 
       // Block elements should not be nested (e.g. <li><p>...); if
